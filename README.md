@@ -31,3 +31,67 @@ source myenv/bin/activate # Mac/Linux
 
 # Install dependencies
 pip install -r requirements.txt
+
+---
+
+## ⚙️ Configuration
+
+Create a `.env` file in the project root:
+
+```env
+SECRET_KEY=thisismysecretkey
+MAIL_USERNAME="your-email@gmail.com"
+MAIL_PASSWORD="your-app-password"
+
+---
+
+## ▶️ Running the App
+
+```bash
+flask run
+
+---
+
+Server will start at:  
+👉 `http://127.0.0.1:5000`
+
+---
+
+## 📬 API Endpoints
+
+| Method | Endpoint                  | Description                                |
+|--------|---------------------------|--------------------------------------------|
+| POST   | `/api/register`           | Register a new student                     |
+| POST   | `/api/login`              | Login & receive JWT                        |
+| POST   | `/api/application`        | Submit new application (student)           |
+| GET    | `/api/applications`       | List all applications (admin only)         |
+| PUT    | `/api/application/<id>`   | Update status (approve/reject) & send email|
+| GET    | `/api/offer-letter/<id>`  | Download PDF offer letter (approved only)  |
+| DELETE | `/api/student/<id>`       | Delete a student (admin only)              |
+
+---
+
+## 📄 Offer Letter
+
+- Implemented in **`offer_letter.py`**  
+- Uses **ReportLab** to dynamically generate PDF offer letters  
+- Includes student details:
+  - Name  
+  - Email  
+  - Phone  
+  - Address  
+- Available **only if the application is Approved**  
+- Returns a downloadable PDF:  
+  `offer_letter_<student>.pdf`
+
+---
+
+## 🧪 Testing with Postman
+
+1. Import **`Flask_application.postman_collection.json`** into Postman  
+2. Login with a registered student and get JWT token  
+3. Use JWT token to test protected endpoints  
+4. Submit, approve, and download offer letters  
+5. Check **`students.db`** SQLite database for stored data  
+
+
