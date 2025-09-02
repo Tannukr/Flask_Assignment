@@ -204,6 +204,48 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:5000/api/application",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1NjgyMjYzMSwianRpIjoiNWVmYWFiNjMtNGI4NS00ZWI0LWEyOGQtNTMxOTM1NTgwNzUyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NTY4MjI2MzEsImNzcmYiOiJhNmU5YzVkZC0xZTdjLTRmMjQtOWU5OS02NDc1NjI2ZTM0NGUiLCJleHAiOjE3NTY4MjM1MzEsInJvbGUiOiJzdHVkZW50In0.uSVTATPaahRlZIk2kWBup0RuGEKo2smd2E9P0JDU__Y",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"father_name\": \"xyz\",\r\n  \"mother_name\": \"abc\",\r\n  \"phone\": \"9876543210\",\r\n  \"address\": \"123, MG Road, Chennai, Tamil Nadu\",\r\n  \"tenth_year\": 2018,\r\n  \"tenth_marks\": 92.5,\r\n  \"twelfth_year\": 2020,\r\n  \"twelfth_marks\": 89.3,\r\n  \"degree_certificate\": \"url_or_base64_encoded_file_here\",\r\n  \"id_proof\": \"url_or_base64_encoded_file_here\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/application",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"application"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
