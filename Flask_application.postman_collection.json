@@ -1,0 +1,209 @@
+{
+	"info": {
+		"_postman_id": "025a921a-1975-4650-aefc-906a64d19163",
+		"name": "Flask_application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41629367"
+	},
+	"item": [
+		{
+			"name": "http://127.0.0.1:5000/api/register",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Palak\",\r\n  \"email\": \"archnapalak1200@gmail.com\",\r\n  \"password\": \"palak@1234\"\r\n  \r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/register",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:5000/api/login",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"krishn20114@gmail.com\",\r\n  \"password\": \"Tannu@1234\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/login",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:5000/api/applications",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1NjgxMTQ3OSwianRpIjoiZWVjNzAzMDctMmQzOC00Yjk2LTg5OTQtNDcxODUyMjgyZGNmIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NTY4MTE0NzksImNzcmYiOiJiMDJmNTNmYi03ZWVhLTQxNmMtYmMyMi02ZTdkOWZmNTNlNDAiLCJleHAiOjE3NTY4MTIzNzksInJvbGUiOiJhZG1pbiJ9.CPXVVRkVMxpxP0RpqsR11tlh-7s1flwTXBSMQPxyQyQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"father_name\": \"abc\",\r\n  \"mother_name\": \"def\",\r\n  \"phone\": \"9876543210\",\r\n  \"address\": \"123, MG Road, Chennai, Tamil Nadu\",\r\n  \"tenth_year\": 2018,\r\n  \"tenth_marks\": 88.5,\r\n  \"twelfth_year\": 2020,\r\n  \"twelfth_marks\": 91.2,\r\n  \"degree_certificate\": \"degree_certificate.pdf\",\r\n  \"id_proof\": \"aadhaar_card.pdf\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/applications",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:5000/api/application/1",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1NjgxMDcxNiwianRpIjoiYWViNDExZTgtNmU3Ny00ZGFhLTk2MjQtYzliYjAzNWU2YzIwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NTY4MTA3MTYsImNzcmYiOiI3M2NiMTc4ZC1hYWUzLTQzNmUtYjY2ZC02Mzc0OGJiZGE4NWMiLCJleHAiOjE3NTY4MTE2MTYsInJvbGUiOiJhZG1pbiJ9.H4vdvs0NAZKJTLYPOUHg65jgxCRbWjPBsNGiNOyYP0U",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"status\": \"Approved\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/application/1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"application",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:5000/api/offer-letter/1",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1NjgxMTUyNSwianRpIjoiYmQzYjIyODQtYTdlNy00OGE0LTgyMWItMGRjNzM1NmM1NzY5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3NTY4MTE1MjUsImNzcmYiOiI1NmMwOTkxZC02ZTk1LTQ1MjUtOGFkNy0xOTljZTIyMDIwM2IiLCJleHAiOjE3NTY4MTI0MjUsInJvbGUiOiJzdHVkZW50In0.pSXNl-yIPkIvdgaI_C51ezAkZOHGqoNVTwFjQ6IvZ2A",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/offer-letter/1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"offer-letter",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
