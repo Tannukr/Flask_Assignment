@@ -21,7 +21,7 @@ A **Flask-based REST API** for managing student applications with authentication
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/Flask_Assignement.git
+git clone https://github.com/Tannukr/Flask_Assignment
 cd Flask_Assignement
 
 # Create virtual environment
@@ -31,67 +31,58 @@ source myenv/bin/activate # Mac/Linux
 
 # Install dependencies
 pip install -r requirements.txt
+⚙️ Configuration
+Create a .env file in the project root:
 
----
-
-## ⚙️ Configuration
-
-Create a `.env` file in the project root:
-
-```env
+env
+Copy code
 SECRET_KEY=thisismysecretkey
 MAIL_USERNAME="your-email@gmail.com"
 MAIL_PASSWORD="your-app-password"
-
----
-
-## ▶️ Running the App
-
-```bash
+▶️ Running the App
+bash
+Copy code
 flask run
+Server will start at:
+👉 http://127.0.0.1:5000
 
----
+📬 API Endpoints
+Method	Endpoint	Description
+POST	/api/register	Register a new student
+POST	/api/login	Login & receive JWT
+POST	/api/application	Submit new application (student)
+GET	/api/applications	List all applications (admin only)
+PUT	/api/application/<id>	Update status (approve/reject) & send email
+GET	/api/offer-letter/<id>	Download PDF offer letter (approved only)
+DELETE	/api/student/<id>	Delete a student (admin only)
 
-Server will start at:  
-👉 `http://127.0.0.1:5000`
+📄 Offer Letter
+Implemented in offer_letter.py
 
----
+Uses ReportLab to dynamically generate PDF offer letters
 
-## 📬 API Endpoints
+Includes student details:
 
-| Method | Endpoint                  | Description                                |
-|--------|---------------------------|--------------------------------------------|
-| POST   | `/api/register`           | Register a new student                     |
-| POST   | `/api/login`              | Login & receive JWT                        |
-| POST   | `/api/application`        | Submit new application (student)           |
-| GET    | `/api/applications`       | List all applications (admin only)         |
-| PUT    | `/api/application/<id>`   | Update status (approve/reject) & send email|
-| GET    | `/api/offer-letter/<id>`  | Download PDF offer letter (approved only)  |
-| DELETE | `/api/student/<id>`       | Delete a student (admin only)              |
+Name
 
----
+Email
 
-## 📄 Offer Letter
+Phone
 
-- Implemented in **`offer_letter.py`**  
-- Uses **ReportLab** to dynamically generate PDF offer letters  
-- Includes student details:
-  - Name  
-  - Email  
-  - Phone  
-  - Address  
-- Available **only if the application is Approved**  
-- Returns a downloadable PDF:  
-  `offer_letter_<student>.pdf`
+Address
 
----
+Available only if the application is Approved
 
-## 🧪 Testing with Postman
+Returns a downloadable PDF:
+offer_letter_<student>.pdf
 
-1. Import **`Flask_application.postman_collection.json`** into Postman  
-2. Login with a registered student and get JWT token  
-3. Use JWT token to test protected endpoints  
-4. Submit, approve, and download offer letters  
-5. Check **`students.db`** SQLite database for stored data  
+🧪 Testing with Postman
+Import Flask_application.postman_collection.json into Postman
 
+Register & login with a student account to get a JWT token
 
+Use JWT token in the Authorization → Bearer Token field for protected routes
+
+Submit an application, approve/reject as admin, and download offer letters
+
+Check students.db SQLite database for stored data
