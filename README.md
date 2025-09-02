@@ -54,7 +54,6 @@ POST	/api/application	Submit new application (student)
 GET	/api/applications	List all applications (admin only)
 PUT	/api/application/<id>	Update status (approve/reject) & send email
 GET	/api/offer-letter/<id>	Download PDF offer letter (approved only)
-DELETE	/api/student/<id>	Delete a student (admin only)
 
 📄 Offer Letter
 Implemented in offer_letter.py
