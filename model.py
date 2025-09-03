@@ -3,6 +3,7 @@ from flask_bcrypt import Bcrypt
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
+
 #User Model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,0 +1,250 @@
+<!-- templates/student_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #2563eb;
+            --primary-600: #1d4ed8;
+            --ring: rgba(37, 99, 235, 0.25);
+            --card: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            color: var(--text);
+            background: radial-gradient(1200px 600px at 20% -10%, #e0e7ff, transparent),
+                        radial-gradient(800px 400px at 120% 10%, #d1fae5, transparent),
+                        var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 880px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 16px 30px -14px rgba(0,0,0,0.15);
+            padding: 18px 18px 22px 18px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .logout {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            background: #f9fafb;
+            border-radius: 10px;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s, transform 0.04s;
+        }
+        .logout:hover { background: #f3f4f6; }
+        .logout:active { transform: translateY(1px); }
+
+        .section {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 14px;
+        }
+
+        #application-section p { margin: 0; }
+
+        /* Style the application form that is injected via JS */
+        #application-section .form-wrap { max-width: 420px; margin: 0 auto; }
+        #application-section form {
+            display: grid;
+            gap: 8px;
+        }
+
+        #application-section h3 { margin: 0 0 6px 0; font-size: 16px; text-align: center; }
+
+        #application-section input[type="text"],
+        #application-section input[type="file"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #ffffff;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        #application-section input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--ring);
+        }
+
+        #application-section button[type="submit"],
+        #offer-letter button {
+            padding: 9px 12px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 10px 20px -12px var(--ring);
+            transition: background 0.15s, transform 0.04s;
+        }
+        #application-section button[type="submit"]:hover,
+        #offer-letter button:hover { background: var(--primary-600); }
+        #application-section button[type="submit"]:active,
+        #offer-letter button:active { transform: translateY(1px); }
+
+        #offer-letter p { margin: 0; color: var(--muted); }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="topbar">
+            <h1>Student Dashboard</h1>
+            <button class="logout" onclick="logout()">Logout</button>
+        </div>
+
+        <div id="application-section" class="section"></div>
+        <div id="offer-letter" class="section"></div>
+    </div>
+
+    <script>
+        function logout() {
+            localStorage.removeItem("token"); // clear JWT token
+            alert("You have been logged out.");
+            window.location.href = "/"; // redirect to login
+        }
+
+        async function loadDashboard() {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Please login again");
+                window.location.href = "/";
+                return;
+            }
+
+            const res = await fetch("/api/my-application", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                const appData = await res.json();
+                document.getElementById("application-section").innerHTML =
+                    `<p>Status: <b>${appData.status}</b></p>`;
+
+                if (appData.status === "Approved") {
+                    document.getElementById("offer-letter").innerHTML =
+                        `<button onclick="downloadOfferLetter(${appData.id})">Download Offer Letter</button>`;
+                } else if (appData.status === "Pending") {
+                    document.getElementById("offer-letter").innerHTML = "<p>Your application is under review.</p>";
+                } else if (appData.status === "Rejected") {
+                    document.getElementById("offer-letter").innerHTML = "<p>Your application was rejected.</p>";
+                }
+            } else {
+                // Show application form if no application exists
+                document.getElementById("application-section").innerHTML = `
+                    <div class="form-wrap">
+                        <h3>Submit Application</h3>
+                        <form id="applicationForm">
+                            <input type="text" id="father_name" placeholder="Father's Name" required>
+                            <input type="text" id="mother_name" placeholder="Mother's Name" required>
+                            <input type="text" id="phone" placeholder="Phone" required>
+                            <input type="text" id="address" placeholder="Address" required>
+                            <input type="text" id="tenth_year" placeholder="10th Year" required>
+                            <input type="text" id="tenth_marks" placeholder="10th Marks" required>
+                            <input type="text" id="twelfth_year" placeholder="12th Year" required>
+                            <input type="text" id="twelfth_marks" placeholder="12th Marks" required>
+                            <input type="file" id="degree_certificate" accept="application/pdf" required>
+                            <input type="file" id="id_proof" accept="application/pdf" required>
+                            <button type="submit">Submit Application</button>
+                        </form>
+                    </div>
+                `;
+
+                document.getElementById("applicationForm").addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    const formData = new FormData();
+                    formData.append("father_name", document.getElementById("father_name").value);
+                    formData.append("mother_name", document.getElementById("mother_name").value);
+                    formData.append("phone", document.getElementById("phone").value);
+                    formData.append("address", document.getElementById("address").value);
+                    formData.append("tenth_year", document.getElementById("tenth_year").value);
+                    formData.append("tenth_marks", document.getElementById("tenth_marks").value);
+                    formData.append("twelfth_year", document.getElementById("twelfth_year").value);
+                    formData.append("twelfth_marks", document.getElementById("twelfth_marks").value);
+                    formData.append("degree_certificate", document.getElementById("degree_certificate").files[0]);
+                    formData.append("id_proof", document.getElementById("id_proof").files[0]);
+
+                    const token = localStorage.getItem("token");
+                    const res = await fetch("/api/application", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${token}` },
+                        body: formData
+                    });
+
+                    if (res.ok) {
+                        alert("Application submitted successfully!");
+                        loadDashboard();
+                    } else {
+                        const err = await res.json();
+                        alert("Error: " + err.error);
+                    }
+                });
+            }
+        }
+
+        async function downloadOfferLetter(appId) {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`/api/offer-letter/${appId}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                alert("Error: " + (err.error || "Unable to download offer letter"));
+                return;
+            }
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `offer_letter_${appId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        }
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>

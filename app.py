@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
@@ -8,6 +8,10 @@ import re
 from config import Config
 from model import *
 from student_route import register_offer_letter_routes
+from flask import current_app
+from flask_mail import Message
+from io import BytesIO
+from reportlab.pdfgen import canvas
 
 
 app = Flask(__name__)
@@ -24,6 +28,10 @@ jwt = JWTManager(app)
 register_offer_letter_routes(app)
 
 
+
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 def validate_email(email):
     regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
@@ -87,7 +95,6 @@ def login():
         }
     }), 200
 
-
 @app.route('/api/application', methods=['POST'])
 @jwt_required()
 def submit_application():
@@ -97,24 +104,52 @@ def submit_application():
     if claims["role"] != "student":
         return jsonify({"error": "Only students can submit applications"}), 403
 
-    data = request.get_json()
+    # Read form data
+    father_name = request.form.get("father_name")
+    mother_name = request.form.get("mother_name")
+    phone = request.form.get("phone")
+    address = request.form.get("address")
+    tenth_year = request.form.get("tenth_year")
+    tenth_marks = request.form.get("tenth_marks")
+    twelfth_year = request.form.get("twelfth_year")
+    twelfth_marks = request.form.get("twelfth_marks")
+
+    # Handle file uploads
+    degree_certificate = request.files.get("degree_certificate")
+    id_proof = request.files.get("id_proof")
+
+    if not degree_certificate or not id_proof:
+        return jsonify({"error": "Files are required"}), 400
+
+    # Save files
+    degree_path = f"uploads/{degree_certificate.filename}"
+    id_path = f"uploads/{id_proof.filename}"
+    degree_certificate.save(degree_path)
+    id_proof.save(id_path)
+
     new_app = StudentApplication(
         user_id=current_user_id,
-        father_name=data.get("father_name"),
-        mother_name=data.get("mother_name"),
-        phone=data.get("phone"),
-        address=data.get("address"),
-        tenth_year=data.get("tenth_year"),
-        tenth_marks=data.get("tenth_marks"),
-        twelfth_year=data.get("twelfth_year"),
-        twelfth_marks=data.get("twelfth_marks"),
-        degree_certificate=data.get("degree_certificate"),
-        id_proof=data.get("id_proof")
+        father_name=father_name,
+        mother_name=mother_name,
+        phone=phone,
+        address=address,
+        tenth_year=tenth_year,
+        tenth_marks=tenth_marks,
+        twelfth_year=twelfth_year,
+        twelfth_marks=twelfth_marks,
+        degree_certificate=degree_path,
+        id_proof=id_path,
+        status="Pending"
     )
+
     db.session.add(new_app)
     db.session.commit()
 
-    return jsonify({"message": "Application submitted successfully"}), 201
+    return jsonify({
+        "id": new_app.id,
+        "status": new_app.status
+    }), 201
+
 
 
 @app.route('/api/applications', methods=['GET'])
@@ -138,10 +173,7 @@ def get_all_applications():
     return jsonify(result), 200
 
 
-from flask import current_app
-from flask_mail import Message
-from io import BytesIO
-from reportlab.pdfgen import canvas
+
 
 @app.route('/api/application/<int:app_id>', methods=['PUT'])
 @jwt_required()
@@ -205,6 +237,55 @@ def update_application_status(app_id):
         mail.send(msg)
 
     return jsonify({"message": f"Application {new_status}"}), 200
+
+from flask_jwt_extended import jwt_required, get_jwt
+from datetime import datetime, timezone
+
+# Store revoked tokens
+blacklist = set()
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    return jti in blacklist
+
+@app.route('/api/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]   
+    blacklist.add(jti)
+    return jsonify({"message": "Logged out successfully"}), 200
+
+@app.route("/admin-dashboard")
+def admin_dashboard():
+    return render_template("admin_dashboard.html")
+
+@app.route("/student-dashboard")
+def student_dashboard():
+    return render_template("student_dashboard.html")
+
+
+@app.route('/api/my-application', methods=['GET'])
+@jwt_required()
+def get_my_application():
+    current_user_id = get_jwt_identity()
+    claims = get_jwt()
+
+    if claims["role"] != "student":
+        return jsonify({"error": "Only students can view this"}), 403
+
+    application = StudentApplication.query.filter_by(user_id=current_user_id).first()
+    if not application:
+        return jsonify({"error": "No application found"}), 404
+
+    return jsonify({
+        "id": application.id,
+        "status": application.status,
+        "father_name": application.father_name,
+        "mother_name": application.mother_name,
+        "phone": application.phone,
+        "address": application.address
+    })
 
 
 if __name__ == '__main__':

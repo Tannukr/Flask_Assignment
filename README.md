@@ -1,87 +1,104 @@
-# 🎓 Student Application Management API
+# 🎓 Student Application Management (Flask)
 
-A **Flask-based REST API** for managing student applications with authentication, database storage, PDF offer letters, and email notifications.
+A Flask app with JWT auth where students submit applications and admins approve/reject them. Approved applications get a generated PDF offer letter and an email notification. Includes minimal UI pages for login, student dashboard, and admin dashboard.
 
 ---
 
-## 🚀 Features
-- Student registration & login (**JWT auth**)
-- Students submit applications
-- Admin reviews applications (**approve/reject**)
-- On **approval**, a **PDF offer letter** is generated and students can **download** it
-- **`offer_letter.py`** route creates the PDF dynamically with student details
-- Optional HTML page to preview/download the PDF in the browser
-- Email notification to the student on approval (Gmail SMTP)
-- Secure credentials via **`.env`**
+## Features
+- JWT-based auth: register, login, logout (token blacklist)
+- Student application submission with file uploads
+- Admin dashboard to approve/reject applications
+- PDF offer letter generation (ReportLab) + email on approval
 - Postman collection included
 
 ---
 
-## 🛠️ Setup
+## Tech & Requirements
+- Python 3.10+
+- PostgreSQL (default URI in `config.py`)
+- Gmail SMTP (or any SMTP) for emails
+
+---
+
+## Setup
 
 ```bash
-# Clone repository
+# 1) Clone and enter the project
 git clone https://github.com/Tannukr/Flask_Assignment
 cd Flask_Assignement
 
-# Create virtual environment
+# 2) Create and activate a venv
 python -m venv myenv
 myenv\Scripts\activate   # Windows
-source myenv/bin/activate # Mac/Linux
+# source myenv/bin/activate  # Mac/Linux
 
-# Install dependencies
+# 3) Install deps
 pip install -r requirements.txt
-⚙️ Configuration
-Create a .env file in the project root:
+```
 
-env
-Copy code
+Create a `.env` file in the project root:
+
+```env
 SECRET_KEY=thisismysecretkey
-MAIL_USERNAME="your-email@gmail.com"
-MAIL_PASSWORD="your-app-password"
-▶️ Running the App
-bash
-Copy code
+DATABASE_URL=postgresql://postgres:1234@localhost:5432/Flask_database
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+```
+
+Run the app:
+
+```bash
 flask run
-Server will start at:
-👉 http://127.0.0.1:5000
+# or: python app.py
+```
 
-📬 API Endpoints
-Method	Endpoint	Description
-POST	/api/register	Register a new student
-POST	/api/login	Login & receive JWT
-POST	/api/application	Submit new application (student)
-GET	/api/applications	List all applications (admin only)
-PUT	/api/application/<id>	Update status (approve/reject) & send email
-GET	/api/offer-letter/<id>	Download PDF offer letter (approved only)
+App runs at `http://127.0.0.1:5000`.
 
-📄 Offer Letter
-Implemented in offer_letter.py
+---
 
-Uses ReportLab to dynamically generate PDF offer letters
+## UI Pages
+- `/` login/register page
+  - On successful login, the response payload is:
+    ```json
+    {
+      "message": "Login successful",
+      "user": { "id": 1, "email": "...", "token": "<JWT>", "role": "admin|student" }
+    }
+    ```
+  - The UI stores the token at `user.token`.
 
-Includes student details:
+- `/student-dashboard`
+  - If you already submitted an application, you see its status and can download the offer letter when Approved.
+  - If not, you get a minimal application form (compact width) that posts a `multipart/form-data` payload with these keys:
+    - `father_name`, `mother_name`, `phone`, `address`
+    - `tenth_year`, `tenth_marks`, `twelfth_year`, `twelfth_marks`
+    - `degree_certificate` (file), `id_proof` (file)
 
-Name
+- `/admin-dashboard`
+  - Lists all applications with status.
+  - For Pending, you can Approve/Reject. On approval, a PDF is emailed to the student.
 
-Email
+---
 
-Phone
+## API Summary
+- POST `/api/register` → Register a user (role: `student` or `admin`)
+- POST `/api/login` → Returns `{ user: { id, email, token, role } }`
+- POST `/api/application` (student, JWT)
+  - Accepts form-data, requires files `degree_certificate` and `id_proof`
+- GET `/api/my-application` (student, JWT)
+- GET `/api/applications` (admin, JWT)
+- PUT `/api/application/<id>` (admin, JWT) → Approve/Reject
+- GET `/api/offer-letter/<id>` (JWT) → Download PDF if Approved
+- POST `/api/logout` (JWT) → Blacklists the current token
 
-Address
+---
 
-Available only if the application is Approved
+## Notes
+- Upload directory: files are saved under `uploads/` using original filenames.
+- Offer letters use ReportLab and are sent by email on approval; they can also be downloaded via the endpoint.
+- If you change DB/SMTP settings, update `.env` and/or `config.py` accordingly.
 
-Returns a downloadable PDF:
-offer_letter_<student>.pdf
+---
 
-🧪 Testing with Postman
-Import Flask_application.postman_collection.json into Postman
-
-Register & login with a student account to get a JWT token
-
-Use JWT token in the Authorization → Bearer Token field for protected routes
-
-Submit an application, approve/reject as admin, and download offer letters
-
-Check students.db SQLite database for stored data
+## Postman
+Import `Flask_application.postman_collection.json`, set the auth token variable to the JWT returned from login, and exercise the endpoints end-to-end.

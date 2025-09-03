@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    h2 { margin: 0; }
+    button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; }
+    .logout { background: #6c757d; color: white; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
+    th { background: #007bff; color: white; }
+    .approve { background: #28a745; color: white; }
+    .reject { background: #dc3545; color: white; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Admin Dashboard</h2>
+    <button class="logout" onclick="logout()">Logout</button>
+  </header>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Father's Name</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="applicationsTable"></tbody>
+  </table>
+
+  <script>
+    async function loadApplications() {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/api/applications", {
+          method: "GET",
+          headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Error response:", errorText);
+          alert("Error loading applications");
+          return;
+        }
+
+        const apps = await res.json();
+        console.log("Fetched apps:", apps); // Debug log
+
+        const tbody = document.getElementById("applicationsTable");
+        tbody.innerHTML = "";
+
+        apps.forEach(app => {
+          const row = document.createElement("tr");
+
+          let actions = "";
+          if (app.status === "Pending") {
+            actions = `
+              <button class="approve" onclick="updateStatus(${app.id}, 'Approved')">Approve</button>
+              <button class="reject" onclick="updateStatus(${app.id}, 'Rejected')">Reject</button>
+            `;
+          } else {
+            actions = `<span>${app.status}</span>`;
+          }
+
+          row.innerHTML = `
+            <td>${app.id}</td>
+            <td>${app.student_email || "-"}</td>
+            <td>${app.father_name || "-"}</td>
+            <td>${app.status}</td>
+            <td>${actions}</td>
+          `;
+
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Fetch error:", err);
+        alert("Could not load applications. Check console for details.");
+      }
+    }
+
+    async function updateStatus(appId, status) {
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/api/application/${appId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+          },
+          body: JSON.stringify({ status })
+        });
+
+        const result = await res.json();
+        alert(result.message || result.error);
+        loadApplications(); // refresh
+      } catch (err) {
+        console.error("Update error:", err);
+        alert("Failed to update status");
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      window.location.href = "/";
+    }
+
+    loadApplications();
+  </script>
+</body>
+</html>
