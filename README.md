@@ -1,4 +1,4 @@
-# 🎓 Student Application Management (Flask)
+# Student Application Management (Flask)
 
 A Flask app with JWT auth where students submit applications and admins approve/reject them. Approved applications get a generated PDF offer letter and an email notification. Includes minimal UI pages for login, student dashboard, and admin dashboard.
 

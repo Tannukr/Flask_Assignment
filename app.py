@@ -12,6 +12,7 @@ from flask import current_app
 from flask_mail import Message
 from io import BytesIO
 from reportlab.pdfgen import canvas
+from flask import send_file
 
 
 app = Flask(__name__)
@@ -164,8 +165,18 @@ def get_all_applications():
     for app_data in applications:
         result.append({
             "id": app_data.id,
-            "student_email": app_data.user.email,
+            "student_name": app_data.user.name if app_data.user else None,
+            "student_email": app_data.user.email if app_data.user else None,
             "father_name": app_data.father_name,
+            "mother_name": app_data.mother_name,
+            "phone": app_data.phone,
+            "address": app_data.address,
+            "tenth_year": app_data.tenth_year,
+            "tenth_marks": app_data.tenth_marks,
+            "twelfth_year": app_data.twelfth_year,
+            "twelfth_marks": app_data.twelfth_marks,
+            "degree_certificate_name": app_data.degree_certificate_name,
+            "id_proof_name": app_data.id_proof_name,
             "status": app_data.status
         })
 
@@ -236,6 +247,44 @@ def update_application_status(app_id):
         mail.send(msg)
 
     return jsonify({"message": f"Application {new_status}"}), 200
+
+
+@app.route('/api/application/<int:app_id>/degree', methods=['GET'])
+@jwt_required()
+def download_degree_certificate(app_id):
+    claims = get_jwt()
+    if claims["role"] != "admin":
+        return jsonify({"error": "Only admins can download documents"}), 403
+
+    application = StudentApplication.query.get(app_id)
+    if not application or not application.degree_certificate_data:
+        return jsonify({"error": "Document not found"}), 404
+
+    return send_file(
+        BytesIO(application.degree_certificate_data),
+        as_attachment=True,
+        download_name=application.degree_certificate_name or "degree_certificate",
+        mimetype="application/octet-stream"
+    )
+
+
+@app.route('/api/application/<int:app_id>/id-proof', methods=['GET'])
+@jwt_required()
+def download_id_proof(app_id):
+    claims = get_jwt()
+    if claims["role"] != "admin":
+        return jsonify({"error": "Only admins can download documents"}), 403
+
+    application = StudentApplication.query.get(app_id)
+    if not application or not application.id_proof_data:
+        return jsonify({"error": "Document not found"}), 404
+
+    return send_file(
+        BytesIO(application.id_proof_data),
+        as_attachment=True,
+        download_name=application.id_proof_name or "id_proof",
+        mimetype="application/octet-stream"
+    )
 
 from flask_jwt_extended import jwt_required, get_jwt
 from datetime import datetime, timezone

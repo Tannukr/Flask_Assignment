@@ -26,8 +26,18 @@
     <thead>
       <tr>
         <th>ID</th>
+        <th>Name</th>
         <th>Email</th>
         <th>Father's Name</th>
+        <th>Mother's Name</th>
+        <th>Phone</th>
+        <th>Address</th>
+        <th>10th Year</th>
+        <th>10th Marks</th>
+        <th>12th Year</th>
+        <th>12th Marks</th>
+        <th>12th Marksheet</th>
+        <th>ID Proof</th>
         <th>Status</th>
         <th>Actions</th>
       </tr>
@@ -71,8 +81,18 @@
 
           row.innerHTML = `
             <td>${app.id}</td>
+            <td>${app.student_name || "-"}</td>
             <td>${app.student_email || "-"}</td>
             <td>${app.father_name || "-"}</td>
+            <td>${app.mother_name || "-"}</td>
+            <td>${app.phone || "-"}</td>
+            <td>${app.address || "-"}</td>
+            <td>${app.tenth_year ?? "-"}</td>
+            <td>${app.tenth_marks ?? "-"}</td>
+            <td>${app.twelfth_year ?? "-"}</td>
+            <td>${app.twelfth_marks ?? "-"}</td>
+            <td>${app.degree_certificate_name ? `<a href="#" onclick="downloadFile(${app.id}, 'degree')">${app.degree_certificate_name}</a>` : '-'}</td>
+            <td>${app.id_proof_name ? `<a href="#" onclick="downloadFile(${app.id}, 'id')">${app.id_proof_name}</a>` : '-'}</td>
             <td>${app.status}</td>
             <td>${actions}</td>
           `;
@@ -102,6 +122,30 @@
       } catch (err) {
         console.error("Update error:", err);
         alert("Failed to update status");
+      }
+    }
+
+    async function downloadFile(appId, type) {
+      try {
+        const endpoint = type === 'degree' ? `/api/application/${appId}/degree` : `/api/application/${appId}/id-proof`;
+        const res = await fetch(endpoint, { headers: { "Authorization": "Bearer " + localStorage.getItem("token") } });
+        if (!res.ok) {
+          const err = await res.text();
+          alert("Failed to download: " + err);
+          return;
+        }
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = type === 'degree' ? '12th_marksheet' : 'id_proof';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error(e);
+        alert('Download error');
       }
     }
 
