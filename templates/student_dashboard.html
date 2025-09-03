@@ -180,8 +180,10 @@
                             <input type="text" id="tenth_marks" placeholder="10th Marks" required>
                             <input type="text" id="twelfth_year" placeholder="12th Year" required>
                             <input type="text" id="twelfth_marks" placeholder="12th Marks" required>
-                            <input type="file" id="degree_certificate" accept="application/pdf" required>
-                            <input type="file" id="id_proof" accept="application/pdf" required>
+                            <input type="file" id="degree_certificate" name="degree_certificate" required>
+                            <input type="file" id="id_file" name="id_file" required>
+
+
                             <button type="submit">Submit Application</button>
                         </form>
                     </div>
@@ -200,7 +202,7 @@
                     formData.append("twelfth_year", document.getElementById("twelfth_year").value);
                     formData.append("twelfth_marks", document.getElementById("twelfth_marks").value);
                     formData.append("degree_certificate", document.getElementById("degree_certificate").files[0]);
-                    formData.append("id_proof", document.getElementById("id_proof").files[0]);
+                    formData.append("id_file", document.getElementById("id_file").files[0]);
 
                     const token = localStorage.getItem("token");
                     const res = await fetch("/api/application", {

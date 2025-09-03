@@ -4,7 +4,7 @@ from flask_mail import Mail
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from flask_bcrypt import Bcrypt
 import re
-
+from flask_migrate import Migrate
 from config import Config
 from model import *
 from student_route import register_offer_letter_routes
@@ -21,6 +21,7 @@ db.init_app(app)
 bcrypt.init_app(app)
 mail = Mail(app)
 
+migrate = Migrate(app, db)
 app.config["JWT_SECRET_KEY"] = "your-secret-key"
 jwt = JWTManager(app)
 
@@ -115,17 +116,12 @@ def submit_application():
     twelfth_marks = request.form.get("twelfth_marks")
 
     # Handle file uploads
-    degree_certificate = request.files.get("degree_certificate")
-    id_proof = request.files.get("id_proof")
+    degree_file = request.files.get("degree_certificate")
+    id_file = request.files.get("id_file")
 
-    if not degree_certificate or not id_proof:
+    if not degree_file or not id_file:
         return jsonify({"error": "Files are required"}), 400
 
-    # Save files
-    degree_path = f"uploads/{degree_certificate.filename}"
-    id_path = f"uploads/{id_proof.filename}"
-    degree_certificate.save(degree_path)
-    id_proof.save(id_path)
 
     new_app = StudentApplication(
         user_id=current_user_id,
@@ -137,8 +133,10 @@ def submit_application():
         tenth_marks=tenth_marks,
         twelfth_year=twelfth_year,
         twelfth_marks=twelfth_marks,
-        degree_certificate=degree_path,
-        id_proof=id_path,
+        degree_certificate_name = degree_file.filename,
+        degree_certificate_data = degree_file.read(),
+        id_proof_name = id_file.filename,
+        id_proof_data = id_file.read(),
         status="Pending"
     )
 
@@ -149,6 +147,7 @@ def submit_application():
         "id": new_app.id,
         "status": new_app.status
     }), 201
+
 
 
 
