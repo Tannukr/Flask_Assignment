@@ -8,7 +8,7 @@ A Flask app with JWT auth where students submit applications and admins approve/
 - JWT-based auth: register, login, logout (token blacklist)
 - Student application submission with file uploads
 - Admin dashboard to approve/reject applications
-- PDF offer letter generation (ReportLab), view and download from dashboard (no emails)
+- PDF offer letter generation (ReportLab), view and download from dashboard 
 - Postman collection included
 
 ---
