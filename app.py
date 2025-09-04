@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify,render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from flask_bcrypt import Bcrypt
 import re
@@ -9,10 +8,10 @@ from config import Config
 from model import *
 from student_route import register_offer_letter_routes
 from flask import current_app
-from flask_mail import Message
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from flask import send_file
+from sqlalchemy import text
 
 
 app = Flask(__name__)
@@ -20,7 +19,6 @@ app.config.from_object(Config)
 
 db.init_app(app)
 bcrypt.init_app(app)
-mail = Mail(app)
 
 migrate = Migrate(app, db)
 app.config["JWT_SECRET_KEY"] = "your-secret-key"
@@ -106,7 +104,7 @@ def submit_application():
     if claims["role"] != "student":
         return jsonify({"error": "Only students can submit applications"}), 403
 
-    # Read form data
+    
     father_name = request.form.get("father_name")
     mother_name = request.form.get("mother_name")
     phone = request.form.get("phone")
@@ -207,44 +205,8 @@ def update_application_status(app_id):
     application.status = new_status
     db.session.commit()
 
-    # If approved, generate and email offer letter
     if new_status == "Approved":
-        # Generate PDF in memory
-        pdf_buffer = BytesIO()
-        c = canvas.Canvas(pdf_buffer)
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(200, 800, "Offer Letter")
-
-        c.setFont("Helvetica", 12)
-        c.drawString(100, 750, f"Dear {application.user.name},")
-        c.drawString(100, 730, "We are pleased to inform you that your application has been approved.")
-        c.drawString(100, 710, "Congratulations and welcome aboard!")
-
-        c.drawString(100, 680, f"Student Name : {application.user.name}")
-        c.drawString(100, 660, f"Email        : {application.user.email}")
-        c.drawString(100, 640, f"Phone        : {application.phone}")
-        c.drawString(100, 620, f"Address      : {application.address}")
-
-        c.drawString(100, 580, "Please keep this letter for your records.")
-        c.drawString(100, 560, "Regards,")
-        c.drawString(100, 540, "Admin Team")
-
-        c.showPage()
-        c.save()
-        pdf_buffer.seek(0)
-
-        # Send email with PDF attachment
-        msg = Message(
-            subject="Your Offer Letter",
-            recipients=[application.user.email],
-            body=f"Dear {application.user.name},\n\nPlease find attached your approved offer letter.\n\nBest regards,\nAdmin Team"
-        )
-        msg.attach(
-            f"offer_letter_{application.user.name}.pdf",
-            "application/pdf",
-            pdf_buffer.read()
-        )
-        mail.send(msg)
+        pass
 
     return jsonify({"message": f"Application {new_status}"}), 200
 
@@ -285,6 +247,29 @@ def download_id_proof(app_id):
         download_name=application.id_proof_name or "id_proof",
         mimetype="application/octet-stream"
     )
+
+
+@app.route('/api/admin/reset-sequences', methods=['POST'])
+@jwt_required()
+def reset_sequences():
+    claims = get_jwt()
+    if claims["role"] != "admin":
+        return jsonify({"error": "Only admins can reset sequences"}), 403
+
+    # Reset only when tables are empty to avoid ID conflicts
+    application_count = StudentApplication.query.count()
+    user_count = User.query.count()
+
+    try:
+        if application_count == 0:
+            db.session.execute(text("SELECT setval(pg_get_serial_sequence('student_application','id'), 1, false)"))
+        if user_count == 0:
+            db.session.execute(text("SELECT setval(pg_get_serial_sequence('\"user\"','id'), 1, false)"))
+        db.session.commit()
+        return jsonify({"message": "Sequences reset where tables are empty"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Failed to reset sequences: {str(e)}"}), 500
 
 from flask_jwt_extended import jwt_required, get_jwt
 from datetime import datetime, timezone

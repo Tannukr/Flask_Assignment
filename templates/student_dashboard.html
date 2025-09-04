@@ -160,7 +160,7 @@
 
                 if (appData.status === "Approved") {
                     document.getElementById("offer-letter").innerHTML =
-                        `<button onclick="downloadOfferLetter(${appData.id})">Download Offer Letter</button>`;
+                        `<button onclick="viewOfferLetter(${appData.id})">View Offer Letter</button> <button onclick="downloadOfferLetter(${appData.id})">Download Offer Letter</button>`;
                 } else if (appData.status === "Pending") {
                     document.getElementById("offer-letter").innerHTML = "<p>Your application is under review.</p>";
                 } else if (appData.status === "Rejected") {
@@ -263,6 +263,23 @@
             a.click();
             a.remove();
             window.URL.revokeObjectURL(url);
+        }
+
+        async function viewOfferLetter(appId) {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`/api/offer-letter/${appId}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                alert("Error: " + (err.error || "Unable to open offer letter"));
+                return;
+            }
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, "_blank");
         }
 
         loadDashboard();

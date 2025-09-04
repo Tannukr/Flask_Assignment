@@ -1,6 +1,6 @@
 # Student Application Management (Flask)
 
-A Flask app with JWT auth where students submit applications and admins approve/reject them. Approved applications get a generated PDF offer letter and an email notification. Includes minimal UI pages for login, student dashboard, and admin dashboard.
+A Flask app with JWT auth where students submit applications and admins approve/reject them. Approved applications get a generated PDF offer letter that can be viewed in-browser and downloaded. Includes minimal UI pages for login, student dashboard, and admin dashboard.
 
 ---
 
@@ -8,7 +8,7 @@ A Flask app with JWT auth where students submit applications and admins approve/
 - JWT-based auth: register, login, logout (token blacklist)
 - Student application submission with file uploads
 - Admin dashboard to approve/reject applications
-- PDF offer letter generation (ReportLab) + email on approval
+- PDF offer letter generation (ReportLab), view and download from dashboard (no emails)
 - Postman collection included
 
 ---
@@ -16,7 +16,7 @@ A Flask app with JWT auth where students submit applications and admins approve/
 ## Tech & Requirements
 - Python 3.10+
 - PostgreSQL (default URI in `config.py`)
-- Gmail SMTP (or any SMTP) for emails
+  
 
 ---
 
@@ -41,8 +41,7 @@ Create a `.env` file in the project root:
 ```env
 SECRET_KEY=thisismysecretkey
 DATABASE_URL=postgresql://postgres:1234@localhost:5432/Flask_database
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password
+# No mail configuration required anymore
 ```
 
 Run the app:
@@ -75,8 +74,8 @@ App runs at `http://127.0.0.1:5000`.
     - `degree_certificate` (file), `id_proof` (file)
 
 - `/admin-dashboard`
-  - Lists all applications with status.
-  - For Pending, you can Approve/Reject. On approval, a PDF is emailed to the student.
+  - Lists all applications with full details and status.
+  - For Pending, you can Approve/Reject. On approval, the student can view/download the offer letter.
 
 ---
 
@@ -88,15 +87,11 @@ App runs at `http://127.0.0.1:5000`.
 - GET `/api/my-application` (student, JWT)
 - GET `/api/applications` (admin, JWT)
 - PUT `/api/application/<id>` (admin, JWT) → Approve/Reject
-- GET `/api/offer-letter/<id>` (JWT) → Download PDF if Approved
+- GET `/api/offer-letter/<id>` (JWT) → Returns PDF if Approved (suitable for view or download)
 - POST `/api/logout` (JWT) → Blacklists the current token
 
 ---
 
-## Notes
-- Upload directory: files are saved under `uploads/` using original filenames.
-- Offer letters use ReportLab and are sent by email on approval; they can also be downloaded via the endpoint.
-- If you change DB/SMTP settings, update `.env` and/or `config.py` accordingly.
 
 ---
 
