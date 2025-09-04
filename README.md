@@ -8,7 +8,7 @@ A Flask app with JWT auth where students submit applications and admins approve/
 - JWT-based auth: register, login, logout (token blacklist)
 - Student application submission with file uploads
 - Admin dashboard to approve/reject applications
-- PDF offer letter generation (ReportLab), view and download from dashboard (no emails)
+- PDF offer letter generation (xhtml2pdf/pisa), view and download from dashboard (no emails)
 - Postman collection included
 
 ---
@@ -71,7 +71,7 @@ App runs at `http://127.0.0.1:5000`.
   - If not, you get a minimal application form (compact width) that posts a `multipart/form-data` payload with these keys:
     - `father_name`, `mother_name`, `phone`, `address`
     - `tenth_year`, `tenth_marks`, `twelfth_year`, `twelfth_marks`
-    - `degree_certificate` (file), `id_proof` (file)
+    - `degree_certificate` (file), `id_file` (file)
 
 - `/admin-dashboard`
   - Lists all applications with full details and status.
@@ -83,15 +83,12 @@ App runs at `http://127.0.0.1:5000`.
 - POST `/api/register` → Register a user (role: `student` or `admin`)
 - POST `/api/login` → Returns `{ user: { id, email, token, role } }`
 - POST `/api/application` (student, JWT)
-  - Accepts form-data, requires files `degree_certificate` and `id_proof`
+  - Accepts form-data, requires files `degree_certificate` and `id_file`
 - GET `/api/my-application` (student, JWT)
 - GET `/api/applications` (admin, JWT)
 - PUT `/api/application/<id>` (admin, JWT) → Approve/Reject
 - GET `/api/offer-letter/<id>` (JWT) → Returns PDF if Approved (suitable for view or download)
 - POST `/api/logout` (JWT) → Blacklists the current token
-
----
-
 
 ---
 
