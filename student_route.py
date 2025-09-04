@@ -1,8 +1,7 @@
-# offer_letter.py
+from xhtml2pdf import pisa
+from io import BytesIO
 from flask import send_file, jsonify
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
-from io import BytesIO
-from reportlab.pdfgen import canvas
 from model import StudentApplication
 
 def register_offer_letter_routes(app):
@@ -22,27 +21,65 @@ def register_offer_letter_routes(app):
         if application.status != "Approved":
             return jsonify({"error": "Offer letter available only for approved applications"}), 403
 
-        pdf_buffer = BytesIO()
-        c = canvas.Canvas(pdf_buffer)
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(200, 800, "Offer Letter")
+        # One-page compact HTML template
+        html = f"""
+        <html>
+        <head>
+            <style>
+                @page {{
+                    size: A4;
+                    margin: 2cm;
+                }}
+                body {{
+                    font-family: Arial, sans-serif;
+                    font-size: 12pt;
+                    line-height: 1.5;
+                }}
+                h1 {{
+                    text-align: center;
+                    margin-bottom: 30px;
+                }}
+                .content {{
+                    margin-top: 20px;
+                }}
+                .info {{
+                    margin-top: 20px;
+                }}
+                .footer {{
+                    margin-top: 50px;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>Offer Letter</h1>
+            <div class="content">
+                <p>Dear {application.user.name},</p>
+                <p>
+                    We are pleased to inform you that your application has been 
+                    <b>approved</b>. Congratulations and welcome aboard!
+                </p>
+                <div class="info">
+                    <p><b>Student Name:</b> {application.user.name}</p>
+                    <p><b>Email:</b> {application.user.email}</p>
+                    <p><b>Phone:</b> {application.phone}</p>
+                    <p><b>Address:</b> {application.address}</p>
+                </div>
+                <div class="footer">
+                    <p>Please keep this letter for your records.</p>
+                    <p>Regards,<br>Admin Team</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
 
-        c.setFont("Helvetica", 12)
-        c.drawString(100, 750, f"Dear {application.user.name},")
-        c.drawString(100, 730, "We are pleased to inform you that your application has been approved.")
-        c.drawString(100, 710, "Congratulations and welcome aboard!")
-        c.drawString(100, 680, f"Student Name : {application.user.name}")
-        c.drawString(100, 660, f"Email        : {application.user.email}")
-        c.drawString(100, 640, f"Phone        : {application.phone}")
-        c.drawString(100, 620, f"Address      : {application.address}")
-        c.drawString(100, 580, "Please keep this letter for your records.")
-        c.drawString(100, 560, "Regards,")
-        c.drawString(100, 540, "Admin Team")
-        c.showPage()
-        c.save()
+        pdf_buffer = BytesIO()
+        pisa_status = pisa.CreatePDF(html, dest=pdf_buffer)
+
+        if pisa_status.err:
+            return jsonify({"error": "Failed to generate PDF"}), 500
 
         pdf_buffer.seek(0)
-
         return send_file(
             pdf_buffer,
             as_attachment=True,
