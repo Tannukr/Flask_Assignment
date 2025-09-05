@@ -9,7 +9,6 @@ A Flask app with JWT auth where students submit applications and admins approve/
 - Student application submission with file uploads
 - Admin dashboard to approve/reject applications
 - PDF offer letter generation (xhtml2pdf/pisa), view and download from dashboard 
-- PDF offer letter generation (ReportLab), view and download from dashboard 
 - Postman collection included
 
 ---
