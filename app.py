@@ -5,7 +5,6 @@ from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from io import BytesIO
 import re
-
 from config import Config
 from model import *
 from student_route import register_offer_letter_routes
@@ -213,9 +212,10 @@ def download_degree_certificate(app_id):
 
     return send_file(
         BytesIO(application.degree_certificate_data),
-        as_attachment=True,
+        as_attachment=False,
         download_name=application.degree_certificate_name or "degree_certificate",
-        mimetype="application/octet-stream"
+        #mimetype="application/octet-stream"
+        mimetype="application/pdf"
     )
 
 
@@ -232,9 +232,10 @@ def download_id_proof(app_id):
 
     return send_file(
         BytesIO(application.id_proof_data),
-        as_attachment=True,
+        as_attachment=False,
         download_name=application.id_proof_name or "id_proof",
-        mimetype="application/octet-stream"
+        #mimetype="application/octet-stream"
+        mimetype="application/pdf"
     )
 
 
