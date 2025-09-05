@@ -1,17 +1,14 @@
-from flask import Flask, request, jsonify,render_template
+from flask import Flask, request, jsonify, render_template, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from flask_bcrypt import Bcrypt
-import re
 from flask_migrate import Migrate
+from io import BytesIO
+import re
+
 from config import Config
 from model import *
 from student_route import register_offer_letter_routes
-from flask import current_app
-from io import BytesIO
-from reportlab.pdfgen import canvas
-from flask import send_file
-from sqlalchemy import text
 
 
 app = Flask(__name__)
@@ -27,16 +24,14 @@ jwt = JWTManager(app)
 
 register_offer_letter_routes(app)
 
+def validate_email(email):
+    regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return re.match(regex, email) is not None
 
 
 @app.route("/")
 def home():
     return render_template("index.html")
-
-def validate_email(email):
-    regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-    return re.match(regex, email) is not None
-
 
 
 @app.route('/api/register', methods=['POST'])
@@ -104,7 +99,6 @@ def submit_application():
     if claims["role"] != "student":
         return jsonify({"error": "Only students can submit applications"}), 403
 
-    
     father_name = request.form.get("father_name")
     mother_name = request.form.get("mother_name")
     phone = request.form.get("phone")
@@ -114,7 +108,6 @@ def submit_application():
     twelfth_year = request.form.get("twelfth_year")
     twelfth_marks = request.form.get("twelfth_marks")
 
-    # Handle file uploads
     degree_file = request.files.get("degree_certificate")
     id_file = request.files.get("id_file")
 
@@ -148,8 +141,6 @@ def submit_application():
     }), 201
 
 
-
-
 @app.route('/api/applications', methods=['GET'])
 @jwt_required()
 def get_all_applications():
@@ -179,8 +170,6 @@ def get_all_applications():
         })
 
     return jsonify(result), 200
-
-
 
 
 @app.route('/api/application/<int:app_id>', methods=['PUT'])
@@ -249,32 +238,7 @@ def download_id_proof(app_id):
     )
 
 
-@app.route('/api/admin/reset-sequences', methods=['POST'])
-@jwt_required()
-def reset_sequences():
-    claims = get_jwt()
-    if claims["role"] != "admin":
-        return jsonify({"error": "Only admins can reset sequences"}), 403
 
-    # Reset only when tables are empty to avoid ID conflicts
-    application_count = StudentApplication.query.count()
-    user_count = User.query.count()
-
-    try:
-        if application_count == 0:
-            db.session.execute(text("SELECT setval(pg_get_serial_sequence('student_application','id'), 1, false)"))
-        if user_count == 0:
-            db.session.execute(text("SELECT setval(pg_get_serial_sequence('\"user\"','id'), 1, false)"))
-        db.session.commit()
-        return jsonify({"message": "Sequences reset where tables are empty"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": f"Failed to reset sequences: {str(e)}"}), 500
-
-from flask_jwt_extended import jwt_required, get_jwt
-from datetime import datetime, timezone
-
-# Store revoked tokens
 blacklist = set()
 
 @jwt.token_in_blocklist_loader
